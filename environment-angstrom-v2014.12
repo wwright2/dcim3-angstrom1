@@ -1,0 +1,14 @@
+export SCRIPTS_BASE_VERSION=9
+export BBFETCH2=True
+export DISTRO="angstrom-v2014.12"
+export DISTRO_DIRNAME="angstrom_v2014_12"
+export OE_BUILD_DIR="/home/wwright/dev/dcim3.x/angstrom"
+export BUILDDIR="/home/wwright/dev/dcim3.x/angstrom"
+export OE_BUILD_TMPDIR="/home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12"
+export OE_SOURCE_DIR="/home/wwright/dev/dcim3.x/angstrom/sources"
+export OE_LAYERS_TXT="/home/wwright/dev/dcim3.x/angstrom/sources/layers.txt"
+export OE_BASE="/home/wwright/dev/dcim3.x/angstrom"
+export GCC_LINARO_GNUEABI="/usr/local/arm-linux-gnueabihf/bin"
+export PATH="$GCC_LINARO_GNUEABI:/home/wwright/dev/dcim3.x/angstrom/sources/openembedded-core/scripts:/home/wwright/dev/dcim3.x/angstrom/sources/bitbake/bin:/home/wwright/bin:/home/wwright/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+export BB_ENV_EXTRAWHITE="MACHINE DISTRO TCLIBC TCMODE GIT_PROXY_COMMAND http_proxy ftp_proxy https_proxy all_proxy ALL_PROXY no_proxy SSH_AGENT_PID SSH_AUTH_SOCK BB_SRCREV_POLICY SDKMACHINE BB_NUMBER_THREADS"
+export BBPATH="/home/wwright/dev/dcim3.x/angstrom:/home/wwright/dev/dcim3.x/angstrom/sources/openembedded-core/meta"
