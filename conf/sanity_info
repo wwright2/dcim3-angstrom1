@@ -1,0 +1,3 @@
+SANITY_VERSION 1
+TMPDIR /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc
+SSTATE_DIR /home/wwright/dev/dcim3.x/angstrom/build/sstate-cache
