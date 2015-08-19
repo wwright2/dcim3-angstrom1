@@ -1,0 +1,35 @@
+From 5dfba9d894b7fb08410d0ef7bfb3025e300146f0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+Date: Thu, 27 Feb 2014 14:23:55 +0100
+Subject: [PATCH 036/122] usb: hub: usb_ext_cap_descriptor.bmAttributes is le32
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Better check the correct bit on big endian systems too. Shuts
+up the following sparse __CHECK_ENDIAN__ warning:
+
+  .../hub.c:3965:32: warning: restricted __le32 degrades to integer
+
+Signed-off-by: Bjørn Mork <bjorn@mork.no>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/core/hub.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 69687de..f6c6b6f 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3962,7 +3962,7 @@ static void hub_set_initial_usb2_lpm_policy(struct usb_device *udev)
+ 	connect_type = usb_get_hub_port_connect_type(udev->parent,
+ 			udev->portnum);
+ 
+-	if ((udev->bos->ext_cap->bmAttributes & USB_BESL_SUPPORT) ||
++	if ((udev->bos->ext_cap->bmAttributes & cpu_to_le32(USB_BESL_SUPPORT)) ||
+ 			connect_type == USB_PORT_CONNECT_TYPE_HARD_WIRED) {
+ 		udev->usb2_hw_lpm_allowed = 1;
+ 		usb_set_usb2_hardware_lpm(udev, 1);
+-- 
+1.8.3.4
+

@@ -1,0 +1,97 @@
+From 9bd920bea748d199e2eec22aeac1ff6237175c42 Mon Sep 17 00:00:00 2001
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Tue, 11 Feb 2014 11:26:10 -0500
+Subject: [PATCH 011/122] USB: ehci-platform: check for platform data
+ misconfiguration
+
+The ehci-platform driver checks for misconfigurations in cases where
+the Device Tree data specifies big-endian registers or descriptors but
+the corresponding driver config settings have not been enabled.  As
+Jonas Gorski suggested, we may as well apply the same check to general
+platform data too.
+
+This requires moving the code that sets the big-endian quirk flags
+from the ehci_platform_reset() routine into ehci_platform_probe(), and
+moving the checks out of the DT-specific "if" statement clause.
+
+The patch also changes the text of the error messages in an attempt to
+make the nature of the error more clear.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Jonas Gorski <jogo@openwrt.org>
+Acked-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/host/ehci-platform.c | 42 +++++++++++++++++++++-------------------
+ 1 file changed, 22 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+index 1178730..b3a0e11 100644
+--- a/drivers/usb/host/ehci-platform.c
++++ b/drivers/usb/host/ehci-platform.c
+@@ -55,10 +55,6 @@ static int ehci_platform_reset(struct usb_hcd *hcd)
+ 
+ 	hcd->has_tt = pdata->has_tt;
+ 	ehci->has_synopsys_hc_bug = pdata->has_synopsys_hc_bug;
+-	if (pdata->big_endian_desc)
+-		ehci->big_endian_desc = 1;
+-	if (pdata->big_endian_mmio)
+-		ehci->big_endian_mmio = 1;
+ 
+ 	if (pdata->pre_setup) {
+ 		retval = pdata->pre_setup(hcd);
+@@ -192,22 +188,6 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 		if (of_property_read_bool(dev->dev.of_node, "big-endian"))
+ 			ehci->big_endian_mmio = ehci->big_endian_desc = 1;
+ 
+-#ifndef CONFIG_USB_EHCI_BIG_ENDIAN_MMIO
+-		if (ehci->big_endian_mmio) {
+-			dev_err(&dev->dev,
+-				"Error big-endian-regs not compiled in\n");
+-			err = -EINVAL;
+-			goto err_put_hcd;
+-		}
+-#endif
+-#ifndef CONFIG_USB_EHCI_BIG_ENDIAN_DESC
+-		if (ehci->big_endian_desc) {
+-			dev_err(&dev->dev,
+-				"Error big-endian-desc not compiled in\n");
+-			err = -EINVAL;
+-			goto err_put_hcd;
+-		}
+-#endif
+ 		priv->phy = devm_phy_get(&dev->dev, "usb");
+ 		if (IS_ERR(priv->phy)) {
+ 			err = PTR_ERR(priv->phy);
+@@ -228,6 +208,28 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 		}
+ 	}
+ 
++	if (pdata->big_endian_desc)
++		ehci->big_endian_desc = 1;
++	if (pdata->big_endian_mmio)
++		ehci->big_endian_mmio = 1;
++
++#ifndef CONFIG_USB_EHCI_BIG_ENDIAN_MMIO
++	if (ehci->big_endian_mmio) {
++		dev_err(&dev->dev,
++			"Error: CONFIG_USB_EHCI_BIG_ENDIAN_MMIO not set\n");
++		err = -EINVAL;
++		goto err_put_clks;
++	}
++#endif
++#ifndef CONFIG_USB_EHCI_BIG_ENDIAN_DESC
++	if (ehci->big_endian_desc) {
++		dev_err(&dev->dev,
++			"Error: CONFIG_USB_EHCI_BIG_ENDIAN_DESC not set\n");
++		err = -EINVAL;
++		goto err_put_clks;
++	}
++#endif
++
+ 	if (pdata->power_on) {
+ 		err = pdata->power_on(dev);
+ 		if (err < 0)
+-- 
+1.8.3.4
+

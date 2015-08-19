@@ -1,0 +1,35 @@
+From 7d95acbf7559a83c3139e3a8fbcd97d3913a20ac Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Tue, 25 Feb 2014 17:09:53 +0100
+Subject: [PATCH 038/122] USB: EHCI: tegra: Drop unused defines
+
+Since commit 2d22b42db02f "usb: phy: registering Tegra USB PHY as
+platform driver" the driver no longer relies on the hard-coded physical
+addresses to determine the association between PHY and EHCI port, so
+these defines can be dropped.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/host/ehci-tegra.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/usb/host/ehci-tegra.c b/drivers/usb/host/ehci-tegra.c
+index af28b74..27ac6ad 100644
+--- a/drivers/usb/host/ehci-tegra.c
++++ b/drivers/usb/host/ehci-tegra.c
+@@ -38,10 +38,6 @@
+ 
+ #include "ehci.h"
+ 
+-#define TEGRA_USB_BASE			0xC5000000
+-#define TEGRA_USB2_BASE			0xC5004000
+-#define TEGRA_USB3_BASE			0xC5008000
+-
+ #define PORT_WAKE_BITS (PORT_WKOC_E|PORT_WKDISC_E|PORT_WKCONN_E)
+ 
+ #define TEGRA_USB_DMA_ALIGN 32
+-- 
+1.8.3.4
+

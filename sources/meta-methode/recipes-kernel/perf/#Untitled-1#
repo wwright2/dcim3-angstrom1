@@ -1,0 +1,13 @@
+NOTE: The image creation groups are: [['ubifs', 'tar'], ['ubi']]
+ERROR: Error: The image creation script '/home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/work/am335x_evm-angstrom-linux-gnueabi/core-image-sato-sdk/1.0-r0/temp/create_image.ubifs' returned 255:
+Error: max_leb_cnt too low (4057 needed)
+WARNING: /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/work/am335x_evm-angstrom-linux-gnueabi/core-image-sato-sdk/1.0-r0/temp/create_image.ubifs:1 exit 255 from
+  mkfs.ubifs -r /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/work/am335x_evm-angstrom-linux-gnueabi/core-image-sato-sdk/1.0-r0/rootfs -o /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/../../deploy/glibc/images/am335x-evm/Angstrom-core-image-sato-sdk-glibc-ipk-v2014.12-am335x-evm.rootfs.ubifs -F -m 2048 -e 126976 -c 3836
+
+ERROR: Function failed: do_rootfs
+ERROR: Logfile of failure stored in: /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/work/am335x_evm-angstrom-linux-gnueabi/core-image-sato-sdk/1.0-r0/temp/log.do_rootfs.18982
+ERROR: Task 7 (/home/wwright/dev/dcim3.x/angstrom/sources/openembedded-core/meta/recipes-sato/images/core-image-sato-sdk.bb, do_rootfs) failed with exit code '1'
+NOTE: Tasks Summary: Attempted 5890 tasks of which 5360 didn't need to be rerun and 1 failed.
+NOTE: Writing buildhistory
+No currently running tasks (5890 of 5891)
++ cd /home/wwright/dev/dcim3.x/angstrom/build/tmp-angstrom_v2014_12-glibc/work/armv7at2hf-vfp-neon-angstrom-linux-gnueabi/defaultpkgname/1.0-r0/defaultpkgname-1.0

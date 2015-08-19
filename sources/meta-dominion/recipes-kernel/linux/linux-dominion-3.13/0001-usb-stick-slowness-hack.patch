@@ -1,0 +1,52 @@
+From f5631f2b7c3b1fdcda724560387f9cc274b73e26 Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Mon, 2 Dec 2013 14:54:58 +0100
+Subject: [PATCH 01/15] usb stick slowness hack
+
+---
+ kernel/sysctl.c     | 2 --
+ mm/page-writeback.c | 7 ++++++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 06962ba..e520da6 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1424,7 +1424,6 @@ static struct ctl_table vm_table[] = {
+ 		.extra1		= &zero,
+ 	},
+ #endif
+-#ifdef CONFIG_HIGHMEM
+ 	{
+ 		.procname	= "highmem_is_dirtyable",
+ 		.data		= &vm_highmem_is_dirtyable,
+@@ -1434,7 +1433,6 @@ static struct ctl_table vm_table[] = {
+ 		.extra1		= &zero,
+ 		.extra2		= &one,
+ 	},
+-#endif
+ 	{
+ 		.procname	= "scan_unevictable_pages",
+ 		.data		= &scan_unevictable_pages,
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 7106cb1..6c9000c 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -262,8 +262,13 @@ static unsigned long global_dirtyable_memory(void)
+ 	x += global_page_state(NR_INACTIVE_FILE);
+ 	x += global_page_state(NR_ACTIVE_FILE);
+ 
+-	if (!vm_highmem_is_dirtyable)
++	if (!vm_highmem_is_dirtyable) {
++		const unsigned long GB_pages = 1024*1024*1024 / PAGE_SIZE;
++
+ 		x -= highmem_dirtyable_memory(x);
++		if (x > GB_pages)
++			x = GB_pages;
++	}
+ 
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+-- 
+1.8.3.4
+

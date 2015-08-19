@@ -1,0 +1,52 @@
+From 71ff5aa6e97c10335ed86a82ef63854912c40c70 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 9 Oct 2013 17:19:30 +0200
+Subject: [PATCH 057/122] usbfs: Add ep_to_host_endpoint helper function
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/core/devio.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
+index d7571a6..502974b 100644
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -769,6 +769,15 @@ static int check_ctrlrecip(struct dev_state *ps, unsigned int requesttype,
+ 	return ret;
+ }
+ 
++static struct usb_host_endpoint *ep_to_host_endpoint(struct usb_device *dev,
++						     unsigned char ep)
++{
++	if (ep & USB_ENDPOINT_DIR_MASK)
++		return dev->ep_in[ep & USB_ENDPOINT_NUMBER_MASK];
++	else
++		return dev->ep_out[ep & USB_ENDPOINT_NUMBER_MASK];
++}
++
+ static int match_devt(struct device *dev, void *data)
+ {
+ 	return dev->devt == (dev_t) (unsigned long) data;
+@@ -1230,15 +1239,10 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
+ 		if (ret)
+ 			return ret;
+ 	}
+-	if ((uurb->endpoint & USB_ENDPOINT_DIR_MASK) != 0) {
+-		is_in = 1;
+-		ep = ps->dev->ep_in[uurb->endpoint & USB_ENDPOINT_NUMBER_MASK];
+-	} else {
+-		is_in = 0;
+-		ep = ps->dev->ep_out[uurb->endpoint & USB_ENDPOINT_NUMBER_MASK];
+-	}
++	ep = ep_to_host_endpoint(ps->dev, uurb->endpoint);
+ 	if (!ep)
+ 		return -ENOENT;
++	is_in = (uurb->endpoint & USB_ENDPOINT_DIR_MASK) != 0;
+ 
+ 	u = 0;
+ 	switch(uurb->type) {
+-- 
+1.8.3.4
+

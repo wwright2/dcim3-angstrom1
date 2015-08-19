@@ -1,0 +1,42 @@
+From 7fac42e5fc6843e51247e3480bd76618cfa4cf47 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 9 Oct 2013 17:19:24 +0200
+Subject: [PATCH 051/122] usb-core: Move USB_MAXENDPOINTS definitions to usb.h
+
+So that it can be used in other places too.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/core/config.c | 1 -
+ include/linux/usb.h       | 2 ++
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/core/config.c b/drivers/usb/core/config.c
+index 062967c..1ab4df1 100644
+--- a/drivers/usb/core/config.c
++++ b/drivers/usb/core/config.c
+@@ -10,7 +10,6 @@
+ 
+ 
+ #define USB_MAXALTSETTING		128	/* Hard limit */
+-#define USB_MAXENDPOINTS		30	/* Hard limit */
+ 
+ #define USB_MAXCONFIG			8	/* Arbitrary limit */
+ 
+diff --git a/include/linux/usb.h b/include/linux/usb.h
+index 7f6eb85..9b73dd7 100644
+--- a/include/linux/usb.h
++++ b/include/linux/usb.h
+@@ -202,6 +202,8 @@ static inline void usb_set_intfdata(struct usb_interface *intf, void *data)
+ struct usb_interface *usb_get_intf(struct usb_interface *intf);
+ void usb_put_intf(struct usb_interface *intf);
+ 
++/* Hard limit */
++#define USB_MAXENDPOINTS	30
+ /* this maximum is arbitrary */
+ #define USB_MAXINTERFACES	32
+ #define USB_MAXIADS		(USB_MAXINTERFACES/2)
+-- 
+1.8.3.4
+

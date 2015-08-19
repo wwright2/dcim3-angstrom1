@@ -1,0 +1,45 @@
+From 4b61762a7e3492417b37b8ede4c9a77a5e8ee0c1 Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Thu, 10 Jul 2014 12:03:41 +0200
+Subject: [PATCH 09/13] ARM: DTS: acme-arietta: add st7735fb to spi1
+
+Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+---
+ arch/arm/boot/dts/acme-arietta.dts | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/acme-arietta.dts b/arch/arm/boot/dts/acme-arietta.dts
+index 7cae926..de5a3dd 100644
+--- a/arch/arm/boot/dts/acme-arietta.dts
++++ b/arch/arm/boot/dts/acme-arietta.dts
+@@ -64,11 +64,22 @@
+ 			spi1: spi@f0004000 {
+ 				status = "okay";
+ 				cs-gpios = <&pioA 8 0>, <&pioA 0 0>, <&pioA 31 0>, <&pioA 30 0>;
+-				device@0 {
+-					compatible = "spidev";
+-					spi-max-frequency = <5000000>;	    // 5 MHz
+-					reg = <0>;
+-				};
++				
++				lcd@0 {
++                                	#address-cells = <1>;
++                                	#size-cells = <0>;
++
++                                	compatible = "adafruit,tft-lcd-1.8-green", "sitronix,st7735";
++                                	reg = <0>;
++
++                                	spi-max-frequency = <16000000>;
++                                	spi-cpol;
++                                	spi-cpha;
++
++                                	st7735-rst = <&pioA 25 0>;
++                                	st7735-dc = <&pioA 26 0>;
++                        	};
++
+ 				device@1 {
+ 					compatible = "spidev";
+ 					spi-max-frequency = <5000000>;	    // 5 MHz
+-- 
+1.9.0
+

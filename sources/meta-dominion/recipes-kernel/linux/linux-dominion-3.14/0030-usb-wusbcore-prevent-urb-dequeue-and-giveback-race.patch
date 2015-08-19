@@ -1,0 +1,116 @@
+From bf1495067c85a25e1f710d4eb4beef10b0afe5c6 Mon Sep 17 00:00:00 2001
+From: Thomas Pugliese <thomas.pugliese@gmail.com>
+Date: Fri, 28 Feb 2014 14:31:57 -0600
+Subject: [PATCH 030/122] usb: wusbcore: prevent urb dequeue and giveback race
+
+This patch takes a reference to the wa_xfer object in wa_urb_dequeue to
+prevent the urb giveback code from completing the xfer and freeing it
+while wa_urb_dequeue is executing.  It also checks for done at the start
+to avoid a double completion scenario.  Adding the check for done in
+urb_dequeue means that any other place where a submitted transfer
+segment is marked as done must complete the transfer if it is done.
+__wa_xfer_delayed_run was not checking this case so that check was added
+as well.
+
+Signed-off-by: Thomas Pugliese <thomas.pugliese@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/wusbcore/wa-xfer.c | 37 +++++++++++++++++++++++++++----------
+ 1 file changed, 27 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/usb/wusbcore/wa-xfer.c b/drivers/usb/wusbcore/wa-xfer.c
+index cb06191..5e5343e 100644
+--- a/drivers/usb/wusbcore/wa-xfer.c
++++ b/drivers/usb/wusbcore/wa-xfer.c
+@@ -1471,6 +1471,8 @@ static int __wa_xfer_delayed_run(struct wa_rpipe *rpipe, int *dto_waiting)
+ 			xfer, wa_xfer_id(xfer), seg->index,
+ 			atomic_read(&rpipe->segs_available), result);
+ 		if (unlikely(result < 0)) {
++			int done;
++
+ 			spin_unlock_irqrestore(&rpipe->seg_lock, flags);
+ 			spin_lock_irqsave(&xfer->lock, flags);
+ 			__wa_xfer_abort(xfer);
+@@ -1479,7 +1481,10 @@ static int __wa_xfer_delayed_run(struct wa_rpipe *rpipe, int *dto_waiting)
+ 			 * the RPIPE seg_list.  Mark it done.
+ 			 */
+ 			xfer->segs_done++;
++			done = __wa_xfer_is_done(xfer);
+ 			spin_unlock_irqrestore(&xfer->lock, flags);
++			if (done)
++				wa_xfer_completion(xfer);
+ 			spin_lock_irqsave(&rpipe->seg_lock, flags);
+ 		}
+ 		wa_xfer_put(xfer);
+@@ -1915,20 +1920,20 @@ int wa_urb_dequeue(struct wahc *wa, struct urb *urb, int status)
+ 	/* check if it is safe to unlink. */
+ 	spin_lock_irqsave(&wa->xfer_list_lock, flags);
+ 	result = usb_hcd_check_unlink_urb(&(wa->wusb->usb_hcd), urb, status);
++	if ((result == 0) && urb->hcpriv) {
++		/*
++		 * Get a xfer ref to prevent a race with wa_xfer_giveback
++		 * cleaning up the xfer while we are working with it.
++		 */
++		wa_xfer_get(urb->hcpriv);
++	}
+ 	spin_unlock_irqrestore(&wa->xfer_list_lock, flags);
+ 	if (result)
+ 		return result;
+ 
+ 	xfer = urb->hcpriv;
+-	if (xfer == NULL) {
+-		/*
+-		 * Nothing setup yet enqueue will see urb->status !=
+-		 * -EINPROGRESS (by hcd layer) and bail out with
+-		 * error, no need to do completion
+-		 */
+-		BUG_ON(urb->status == -EINPROGRESS);
+-		goto out;
+-	}
++	if (xfer == NULL)
++		return -ENOENT;
+ 	spin_lock_irqsave(&xfer->lock, flags);
+ 	pr_debug("%s: DEQUEUE xfer id 0x%08X\n", __func__, wa_xfer_id(xfer));
+ 	rpipe = xfer->ep->hcpriv;
+@@ -1939,6 +1944,16 @@ int wa_urb_dequeue(struct wahc *wa, struct urb *urb, int status)
+ 		result = -ENOENT;
+ 		goto out_unlock;
+ 	}
++	/*
++	 * Check for done to avoid racing with wa_xfer_giveback and completing
++	 * twice.
++	 */
++	if (__wa_xfer_is_done(xfer)) {
++		pr_debug("%s: xfer %p id 0x%08X already done.\n", __func__,
++			xfer, wa_xfer_id(xfer));
++		result = -ENOENT;
++		goto out_unlock;
++	}
+ 	/* Check the delayed list -> if there, release and complete */
+ 	spin_lock_irqsave(&wa->xfer_list_lock, flags2);
+ 	if (!list_empty(&xfer->list_node) && xfer->seg == NULL)
+@@ -2007,11 +2022,12 @@ int wa_urb_dequeue(struct wahc *wa, struct urb *urb, int status)
+ 		wa_xfer_completion(xfer);
+ 	if (rpipe_ready)
+ 		wa_xfer_delayed_run(rpipe);
++	wa_xfer_put(xfer);
+ 	return result;
+ 
+ out_unlock:
+ 	spin_unlock_irqrestore(&xfer->lock, flags);
+-out:
++	wa_xfer_put(xfer);
+ 	return result;
+ 
+ dequeue_delayed:
+@@ -2020,6 +2036,7 @@ dequeue_delayed:
+ 	xfer->result = urb->status;
+ 	spin_unlock_irqrestore(&xfer->lock, flags);
+ 	wa_xfer_giveback(xfer);
++	wa_xfer_put(xfer);
+ 	usb_put_urb(urb);		/* we got a ref in enqueue() */
+ 	return 0;
+ }
+-- 
+1.8.3.4
+

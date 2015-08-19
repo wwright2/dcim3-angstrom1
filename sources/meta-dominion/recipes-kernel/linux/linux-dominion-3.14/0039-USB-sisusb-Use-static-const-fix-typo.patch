@@ -1,0 +1,51 @@
+From 14c46ac17e4137472d5dec33b0c0a44829255520 Mon Sep 17 00:00:00 2001
+From: Joe Perches <joe@perches.com>
+Date: Mon, 24 Feb 2014 10:01:16 -0800
+Subject: [PATCH 039/122] USB: sisusb: Use static const, fix typo
+
+Convert 1 char * array to 2 char arrays to reduce size.
+Use static const to avoid array reloads on function entry.
+Fix asymmetric typo.
+
+$ size drivers/usb/misc/sisusbvga/sisusb.o*
+   text	   data	    bss	    dec	    hex	filename
+  29971	   4841	   9180	  43992	   abd8	drivers/usb/misc/sisusbvga/sisusb.o.new
+  30083	   4841	   9180	  44104	   ac48	drivers/usb/misc/sisusbvga/sisusb.o.old
+
+Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/misc/sisusbvga/sisusb.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/misc/sisusbvga/sisusb.c b/drivers/usb/misc/sisusbvga/sisusb.c
+index de98906..06b5d77 100644
+--- a/drivers/usb/misc/sisusbvga/sisusb.c
++++ b/drivers/usb/misc/sisusbvga/sisusb.c
+@@ -2123,8 +2123,8 @@ sisusb_get_ramconfig(struct sisusb_usb_data *sisusb)
+ 	u8 tmp8, tmp82, ramtype;
+ 	int bw = 0;
+ 	char *ramtypetext1 = NULL;
+-	const char *ramtypetext2[] = {	"SDR SDRAM", "SDR SGRAM",
+-					"DDR SDRAM", "DDR SGRAM" };
++	static const char ram_datarate[4] = {'S', 'S', 'D', 'D'};
++	static const char ram_dynamictype[4] = {'D', 'G', 'D', 'G'};
+ 	static const int busSDR[4]  = {64, 64, 128, 128};
+ 	static const int busDDR[4]  = {32, 32,  64,  64};
+ 	static const int busDDRA[4] = {64+32, 64+32 , (64+32)*2, (64+32)*2};
+@@ -2156,8 +2156,10 @@ sisusb_get_ramconfig(struct sisusb_usb_data *sisusb)
+ 		break;
+ 	}
+ 
+-	dev_info(&sisusb->sisusb_dev->dev, "%dMB %s %s, bus width %d\n", (sisusb->vramsize >> 20), ramtypetext1,
+-			ramtypetext2[ramtype], bw);
++
++	dev_info(&sisusb->sisusb_dev->dev, "%dMB %s %cDR S%cRAM, bus width %d\n",
++		 sisusb->vramsize >> 20, ramtypetext1,
++		 ram_datarate[ramtype], ram_dynamictype[ramtype], bw);
+ }
+ 
+ static int
+-- 
+1.8.3.4
+

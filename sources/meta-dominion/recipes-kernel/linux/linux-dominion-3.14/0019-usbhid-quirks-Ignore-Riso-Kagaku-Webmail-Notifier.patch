@@ -1,0 +1,43 @@
+From c86bb091455f10eebda0ee69de00a8759b3e7421 Mon Sep 17 00:00:00 2001
+From: Christian Vogel <vogelchr@vogel.cx>
+Date: Wed, 12 Feb 2014 20:56:00 +0100
+Subject: [PATCH 019/122] usbhid/quirks: Ignore Riso Kagaku Webmail Notifier
+
+The "Webmail Notifier" is a USB controlled LED that appears as a HID
+device. When trying to change the LED via hidraw it returns malformed
+reports. As "usbled" supports it, we blacklist it in usbhid.
+
+Signed-off-by: Christian Vogel <vogelchr@vogel.cx>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/hid/hid-core.c | 1 +
+ drivers/hid/hid-ids.h  | 3 +++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index cc32a6f..2448d75 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -2278,6 +2278,7 @@ static const struct hid_device_id hid_ignore_list[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_WISEGROUP, USB_DEVICE_ID_1_PHIDGETSERVO_20) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_WISEGROUP, USB_DEVICE_ID_8_8_4_IF_KIT) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_YEALINK, USB_DEVICE_ID_YEALINK_P1K_P4K_B2K) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_RISO_KAGAKU, USB_DEVICE_ID_RI_KA_WEBMAIL) },
+ 	{ }
+ };
+ 
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 22f28d6..830de69 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -961,4 +961,7 @@
+ #define USB_DEVICE_ID_PRIMAX_KEYBOARD	0x4e05
+ 
+ 
++#define USB_VENDOR_ID_RISO_KAGAKU	0x1294	/* Riso Kagaku Corp. */
++#define USB_DEVICE_ID_RI_KA_WEBMAIL	0x1320	/* Webmail Notifier */
++
+ #endif
+-- 
+1.8.3.4
+

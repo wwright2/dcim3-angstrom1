@@ -1,0 +1,38 @@
+From e6346db9be55dd73b27a73c3b3ce252e10e3c231 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 15 Nov 2013 10:04:11 +0100
+Subject: [PATCH 106/122] uas: Add some data in/out ready iu sanity checks
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index f09205b..6208682 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -379,9 +379,19 @@ static void uas_stat_cmplt(struct urb *urb)
+ 		uas_try_complete(cmnd, __func__);
+ 		break;
+ 	case IU_ID_READ_READY:
++		if (!cmdinfo->data_in_urb ||
++				(cmdinfo->state & DATA_IN_URB_INFLIGHT)) {
++			scmd_printk(KERN_ERR, cmnd, "unexpected read rdy\n");
++			break;
++		}
+ 		uas_xfer_data(urb, cmnd, SUBMIT_DATA_IN_URB);
+ 		break;
+ 	case IU_ID_WRITE_READY:
++		if (!cmdinfo->data_out_urb ||
++				(cmdinfo->state & DATA_OUT_URB_INFLIGHT)) {
++			scmd_printk(KERN_ERR, cmnd, "unexpected write rdy\n");
++			break;
++		}
+ 		uas_xfer_data(urb, cmnd, SUBMIT_DATA_OUT_URB);
+ 		break;
+ 	default:
+-- 
+1.8.3.4
+

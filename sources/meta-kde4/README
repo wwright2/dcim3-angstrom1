@@ -1,0 +1,50 @@
+Layer name:          meta-kde
+Layer purpose:       Support plasma active and plasma desktop in OpenEmbedded
+Layer status:        Work in progress / unstable
+Layer dependencies:  meta-networking, meta-openembedded, openembedded-core
+Layer license:       MIT license (see COPYING.MIT)
+
+Layer maintainers:
+Samuel Stirtzel <s.stirtzel@googlemail.com>
+
+Contributors:
+Copyright 2012 - Kai Kang
+Copyright 2013 - Khem Raj
+Copyright 2012, 2013 - Koen Kooi
+Copyright 2012 - Robert Yang
+Copyright 2011-2013 - Samuel Stirtzel
+
+Thanks to:
+Andreas Müller
+
+
+Install:
+Requires setupscripts from the Angstrom distribution or Poky from the Yocto Project.
+
+To intall this layer you need to add it to the config/bblayer.conf.
+If you want to update the layer automatically with your setupscripts add it to sources/layer.txt files.
+
+Please note that it is a good advice to delete the tmp and sstate directories when adding or removing layers,
+in the meta-kde case there will be problems with dependencies (qt4) otherwise.
+(Alternatively it would be faster to rebuild just Qt with "bitbake -ccleansstate qt4-x11-free && bitbake qt4-x11-free")
+
+Issues with poky should be fixed now that Systemd has moved out of meta-oe.
+
+
+FAQ / Troubleshooting:
+1.
+  Q: How can I contribute my patches / recipes to this layer?
+  A: Send a patch or merge request to the meta-oe mailing list with [meta-kde] in the subject field.
+     Don't forget to add your name to the contributors list.
+
+2.
+  Q: A recipe does not build, breaks parsing, what to do?
+  A: This layer is still work in progress, breakage can happen at any time.
+     Contact a layer maintainer, if the problem is easy to fix send a patch.
+     If the error is not that simple, wait until the issue is fixed (or disable this layer if parsing fails).
+
+3.
+  Q: How to report bugs / request features?
+  A: Send your bugreports / feature requests to the openembedded-developer mailing list.
+     Include the [meta-kde] tag in the subject for easier readability.
+     You can find the mailing list here: http://lists.linuxtogo.org/cgi-bin/mailman/listinfo/openembedded-devel

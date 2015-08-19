@@ -1,0 +1,31 @@
+From 0f89625c8eb9a4607a12be7eb0c9c4fec019f8fe Mon Sep 17 00:00:00 2001
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 21 Jan 2014 09:50:51 +0300
+Subject: [PATCH 007/122] usb: phy: msm: tiny leak on error in probe()
+
+Free "motog" on error.  This is more to appease the static checkers than
+a real worry.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/phy/phy-msm-usb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/phy/phy-msm-usb.c b/drivers/usb/phy/phy-msm-usb.c
+index d204f74..5b37b81 100644
+--- a/drivers/usb/phy/phy-msm-usb.c
++++ b/drivers/usb/phy/phy-msm-usb.c
+@@ -1428,7 +1428,8 @@ static int __init msm_otg_probe(struct platform_device *pdev)
+ 	motg->phy.otg = kzalloc(sizeof(struct usb_otg), GFP_KERNEL);
+ 	if (!motg->phy.otg) {
+ 		dev_err(&pdev->dev, "unable to allocate msm_otg\n");
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto free_motg;
+ 	}
+ 
+ 	motg->pdata = dev_get_platdata(&pdev->dev);
+-- 
+1.8.3.4
+

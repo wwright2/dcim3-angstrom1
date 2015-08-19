@@ -1,0 +1,28 @@
+From 26ecd9c7e5a4b3f2ab97b078e66a229dcb0806fa Mon Sep 17 00:00:00 2001
+From: Arianna Avanzini <avanzini.arianna@gmail.com>
+Date: Sat, 15 Feb 2014 19:11:37 +0100
+Subject: [PATCH 127/127] block, bfq: Switch from BFQ-v7r2 for 3.13.0 to
+ BFQ-v7r2 for 3.14.0-rc2
+
+Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+Signed-off-by: Arianna Avanzini <avanzini.arianna@gmail.com>
+---
+ block/bfq-iosched.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/block/bfq-iosched.c b/block/bfq-iosched.c
+index d3626df..0d3503d 100644
+--- a/block/bfq-iosched.c
++++ b/block/bfq-iosched.c
+@@ -810,7 +810,7 @@ static inline sector_t bfq_io_struct_pos(void *io_struct, bool request)
+ 	if (request)
+ 		return blk_rq_pos(io_struct);
+ 	else
+-		return ((struct bio *)io_struct)->bi_sector;
++		return ((struct bio *)io_struct)->bi_iter.bi_sector;
+ }
+ 
+ static inline sector_t bfq_dist_from(sector_t pos1,
+-- 
+1.8.3.4
+

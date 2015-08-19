@@ -1,0 +1,61 @@
+From 419fc7e80602aeb5b0faeb18756a59249c3e0598 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 13 Nov 2013 09:24:15 +0100
+Subject: [PATCH 101/122] uas: Fix command / task mgmt submission racing with
+ disconnect
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index cfe0102..8c68580 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -670,13 +670,15 @@ static int uas_queuecommand_lck(struct scsi_cmnd *cmnd,
+ 
+ 	BUILD_BUG_ON(sizeof(struct uas_cmd_info) > sizeof(struct scsi_pointer));
+ 
++	spin_lock_irqsave(&devinfo->lock, flags);
++
+ 	if (devinfo->resetting) {
+ 		cmnd->result = DID_ERROR << 16;
+ 		cmnd->scsi_done(cmnd);
++		spin_unlock_irqrestore(&devinfo->lock, flags);
+ 		return 0;
+ 	}
+ 
+-	spin_lock_irqsave(&devinfo->lock, flags);
+ 	if (devinfo->cmnd) {
+ 		spin_unlock_irqrestore(&devinfo->lock, flags);
+ 		return SCSI_MLQUEUE_DEVICE_BUSY;
+@@ -740,6 +742,11 @@ static int uas_eh_task_mgmt(struct scsi_cmnd *cmnd,
+ 
+ 	spin_lock_irqsave(&devinfo->lock, flags);
+ 
++	if (devinfo->resetting) {
++		spin_unlock_irqrestore(&devinfo->lock, flags);
++		return FAILED;
++	}
++
+ 	if (devinfo->running_task) {
+ 		shost_printk(KERN_INFO, shost,
+ 			     "%s: %s: error already running a task\n",
+@@ -809,6 +816,12 @@ static int uas_eh_abort_handler(struct scsi_cmnd *cmnd)
+ 	int ret;
+ 
+ 	spin_lock_irqsave(&devinfo->lock, flags);
++
++	if (devinfo->resetting) {
++		spin_unlock_irqrestore(&devinfo->lock, flags);
++		return FAILED;
++	}
++
+ 	uas_mark_cmd_dead(devinfo, cmdinfo, __func__);
+ 	if (cmdinfo->state & COMMAND_INFLIGHT) {
+ 		spin_unlock_irqrestore(&devinfo->lock, flags);
+-- 
+1.8.3.4
+

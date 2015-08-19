@@ -1,0 +1,56 @@
+From 6a3151723f80e0191ede1e4c961239f3348c5ccc Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sat, 16 Nov 2013 12:19:36 +0100
+Subject: [PATCH 084/122] uas: Honor no-uas quirk set in usb-storage's quirks
+ module parameter
+
+Falling back from uas to usb-storage requires coordination between uas and
+usb-storage, so use usb-storage's quirks module parameter, rather then
+requiring the user to pass a param to 2 different modules.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/Kconfig      | 2 +-
+ drivers/usb/storage/uas-detect.h | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/storage/Kconfig b/drivers/usb/storage/Kconfig
+index 1dd0604..666dcb6 100644
+--- a/drivers/usb/storage/Kconfig
++++ b/drivers/usb/storage/Kconfig
+@@ -204,7 +204,7 @@ config USB_STORAGE_ENE_UB6250
+ 
+ config USB_UAS
+ 	tristate "USB Attached SCSI"
+-	depends on SCSI && BROKEN
++	depends on SCSI && USB_STORAGE && BROKEN
+ 	help
+ 	  The USB Attached SCSI protocol is supported by some USB
+ 	  storage devices.  It permits higher performance by supporting
+diff --git a/drivers/usb/storage/uas-detect.h b/drivers/usb/storage/uas-detect.h
+index 02bf5ec..082bde1 100644
+--- a/drivers/usb/storage/uas-detect.h
++++ b/drivers/usb/storage/uas-detect.h
+@@ -1,5 +1,6 @@
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
++#include "usb.h"
+ 
+ static int uas_is_interface(struct usb_host_interface *intf)
+ {
+@@ -42,8 +43,11 @@ static int uas_find_uas_alt_setting(struct usb_interface *intf)
+ static int uas_use_uas_driver(struct usb_interface *intf,
+ 			      const struct usb_device_id *id)
+ {
++	struct usb_device *udev = interface_to_usbdev(intf);
+ 	unsigned long flags = id->driver_info;
+ 
++	usb_stor_adjust_quirks(udev, &flags);
++
+ 	if (flags & US_FL_IGNORE_UAS)
+ 		return 0;
+ 
+-- 
+1.8.3.4
+

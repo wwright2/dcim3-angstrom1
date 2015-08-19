@@ -1,0 +1,53 @@
+From 7ddf7059cf08a21099abb0287bcf1f1ebc72db98 Mon Sep 17 00:00:00 2001
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Sun, 16 Feb 2014 20:45:41 +0100
+Subject: [PATCH 020/122] usb: host: remove USB_ARCH_HAS_?HCI
+
+USB_ARCH_HAS_EHCI, USB_ARCH_HAS_OHCI, and USB_ARCH_HAS_XHCI were made
+obsolete in v3.11. They have not been used ever since. Setting them has
+no effect. They can safely be removed.
+
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/Kconfig | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index 2e6b832..e0cad44 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -2,10 +2,6 @@
+ # USB device configuration
+ #
+ 
+-# These are unused now, remove them once they are no longer selected
+-config USB_ARCH_HAS_OHCI
+-	bool
+-
+ config USB_OHCI_BIG_ENDIAN_DESC
+ 	bool
+ 
+@@ -17,18 +13,12 @@ config USB_OHCI_LITTLE_ENDIAN
+ 	default n if STB03xxx || PPC_MPC52xx
+ 	default y
+ 
+-config USB_ARCH_HAS_EHCI
+-	bool
+-
+ config USB_EHCI_BIG_ENDIAN_MMIO
+ 	bool
+ 
+ config USB_EHCI_BIG_ENDIAN_DESC
+ 	bool
+ 
+-config USB_ARCH_HAS_XHCI
+-	bool
+-
+ menuconfig USB_SUPPORT
+ 	bool "USB support"
+ 	depends on HAS_IOMEM
+-- 
+1.8.3.4
+

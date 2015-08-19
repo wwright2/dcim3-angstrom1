@@ -1,0 +1,26 @@
+From e472dde6efbc6788b412720d112c0bb76339aff5 Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Tue, 22 Jul 2014 09:21:30 +0200
+Subject: [PATCH 10/13] ARM: DT: increas G25 SPI to 24MHz
+
+Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+---
+ arch/arm/boot/dts/acme-arietta.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/acme-arietta.dts b/arch/arm/boot/dts/acme-arietta.dts
+index de5a3dd..c3b53a7 100644
+--- a/arch/arm/boot/dts/acme-arietta.dts
++++ b/arch/arm/boot/dts/acme-arietta.dts
+@@ -72,7 +72,7 @@
+                                 	compatible = "adafruit,tft-lcd-1.8-green", "sitronix,st7735";
+                                 	reg = <0>;
+ 
+-                                	spi-max-frequency = <16000000>;
++                                	spi-max-frequency = <24000000>;
+                                 	spi-cpol;
+                                 	spi-cpha;
+ 
+-- 
+1.9.0
+

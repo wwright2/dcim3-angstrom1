@@ -1,0 +1,50 @@
+From 667164576b0ac1edea18bb7f6c1dcb65fa20e163 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 7 Nov 2013 08:35:55 +0100
+Subject: [PATCH 093/122] uas: Use GFP_NOIO rather then GFP_ATOMIC where
+ possible
+
+We can sleep in our own workqueue (which is the whole reason for having
+it), and scsi error handlers are also always called from a context which
+may sleep.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 7fc4ad2..8023944 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -133,7 +133,7 @@ static void uas_do_work(struct work_struct *work)
+ 		struct scsi_pointer *scp = (void *)cmdinfo;
+ 		struct scsi_cmnd *cmnd = container_of(scp, struct scsi_cmnd,
+ 						      SCp);
+-		err = uas_submit_urbs(cmnd, cmnd->device->hostdata, GFP_ATOMIC);
++		err = uas_submit_urbs(cmnd, cmnd->device->hostdata, GFP_NOIO);
+ 		if (!err) {
+ 			cmdinfo->state &= ~IS_IN_WORK_LIST;
+ 			list_del(&cmdinfo->work);
+@@ -745,7 +745,7 @@ static int uas_eh_task_mgmt(struct scsi_cmnd *cmnd,
+ 
+ 	devinfo->running_task = 1;
+ 	memset(&devinfo->response, 0, sizeof(devinfo->response));
+-	sense_urb = uas_submit_sense_urb(shost, GFP_ATOMIC, tag);
++	sense_urb = uas_submit_sense_urb(shost, GFP_NOIO, tag);
+ 	if (!sense_urb) {
+ 		shost_printk(KERN_INFO, shost,
+ 			     "%s: %s: submit sense urb failed\n",
+@@ -754,7 +754,7 @@ static int uas_eh_task_mgmt(struct scsi_cmnd *cmnd,
+ 		spin_unlock_irqrestore(&devinfo->lock, flags);
+ 		return FAILED;
+ 	}
+-	if (uas_submit_task_urb(cmnd, GFP_ATOMIC, function, tag)) {
++	if (uas_submit_task_urb(cmnd, GFP_NOIO, function, tag)) {
+ 		shost_printk(KERN_INFO, shost,
+ 			     "%s: %s: submit task mgmt urb failed\n",
+ 			     __func__, fname);
+-- 
+1.8.3.4
+

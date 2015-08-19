@@ -1,0 +1,91 @@
+From 7ffc083f3d83cc134815101f77fc1eff3bccaa03 Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Tue, 24 Apr 2012 12:00:04 +0200
+Subject: [PATCH 119/122] btrfs: add lz4hc incompat bits
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+---
+ fs/btrfs/ctree.h   |  5 +++--
+ fs/btrfs/disk-io.c |  4 +++-
+ fs/btrfs/ioctl.c   |  3 ++-
+ fs/btrfs/super.c   | 12 ++++++++++++
+ 4 files changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index bb8b563..f1a4882 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -703,8 +703,9 @@ enum btrfs_compression_type {
+ 	BTRFS_COMPRESS_ZLIB  = 1,
+ 	BTRFS_COMPRESS_LZO   = 2,
+ 	BTRFS_COMPRESS_LZ4   = 3,
+-	BTRFS_COMPRESS_TYPES = 4,
+-	BTRFS_COMPRESS_LAST  = 4,
++	BTRFS_COMPRESS_LZ4HC = 4,
++	BTRFS_COMPRESS_TYPES = 5,
++	BTRFS_COMPRESS_LAST  = 5,
+ };
+ 
+ struct btrfs_inode_item {
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index a7133c8..63dd10a 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -2409,7 +2409,9 @@ int open_ctree(struct super_block *sb,
+ 	features |= BTRFS_FEATURE_INCOMPAT_MIXED_BACKREF;
+ 	if (tree_root->fs_info->compress_type == BTRFS_COMPRESS_LZO)
+ 		features |= BTRFS_FEATURE_INCOMPAT_COMPRESS_LZO;
+-	if (tree_root->fs_info->compress_type == BTRFS_COMPRESS_LZ4)
++
++	if (tree_root->fs_info->compress_type == BTRFS_COMPRESS_LZ4 ||
++	    tree_root->fs_info->compress_type == BTRFS_COMPRESS_LZ4HC)
+ 		features |= BTRFS_FEATURE_INCOMPAT_COMPRESS_LZ4;
+ 
+ 	if (features & BTRFS_FEATURE_INCOMPAT_SKINNY_METADATA)
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index f046fde..ac6c780 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -1377,7 +1377,8 @@ int btrfs_defrag_file(struct inode *inode, struct file *file,
+ 	if (range->compress_type == BTRFS_COMPRESS_LZO) {
+ 		btrfs_set_fs_incompat(root->fs_info, COMPRESS_LZO);
+ 	}
+-	if (range->compress_type == BTRFS_COMPRESS_LZ4) {
++	if (range->compress_type == BTRFS_COMPRESS_LZ4 ||
++	    range->compress_type == BTRFS_COMPRESS_LZ4HC) {
+ 		btrfs_set_fs_incompat(root->fs_info, COMPRESS_LZ4);
+ 	}
+ 
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index b3ec96d..b19a2e5 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -518,6 +518,16 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 				btrfs_clear_opt(info->mount_opt, NODATACOW);
+ 				btrfs_clear_opt(info->mount_opt, NODATASUM);
+ 				btrfs_set_fs_incompat(info, COMPRESS_LZ4);
++			} else if (strcmp(args[0].from, "lz4hc") == 0) {
++				compress_type = "lz4hc";
++				info->compress_type = BTRFS_COMPRESS_LZ4HC;
++				btrfs_set_opt(info->mount_opt, COMPRESS);
++				btrfs_clear_opt(info->mount_opt, NODATACOW);
++				btrfs_clear_opt(info->mount_opt, NODATASUM);
++				btrfs_set_fs_incompat(info, COMPRESS_LZ4);
++				/* Remove when enabled */
++				ret = -EINVAL;
++				goto out;
+ 			} else {
+ 				ret = -EINVAL;
+ 				goto out;
+@@ -1044,6 +1054,8 @@ static int btrfs_show_options(struct seq_file *seq, struct dentry *dentry)
+ 			compress_type = "zlib";
+ 		else if (info->compress_type == BTRFS_COMPRESS_LZ4)
+ 			compress_type = "lz4";
++		else if (info->compress_type == BTRFS_COMPRESS_LZ4HC)
++			compress_type = "lz4hc";
+  		else if (info->compress_type == BTRFS_COMPRESS_LZO)
+  			compress_type = "lzo";
+ 		else
+-- 
+1.8.3.4
+

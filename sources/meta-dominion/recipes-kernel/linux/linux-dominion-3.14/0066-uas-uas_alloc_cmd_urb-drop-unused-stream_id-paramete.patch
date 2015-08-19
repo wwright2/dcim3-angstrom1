@@ -1,0 +1,40 @@
+From c9261241a101e4c0f1549cba648c876ac33c2cee Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 17 Oct 2013 19:47:28 +0200
+Subject: [PATCH 066/122] uas: uas_alloc_cmd_urb: drop unused stream_id
+ parameter
+
+The cmd endpoint never has streams, so the stream_id parameter is unused.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index dcaf6119..5eacb80 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -454,7 +454,7 @@ static struct urb *uas_alloc_sense_urb(struct uas_dev_info *devinfo, gfp_t gfp,
+ }
+ 
+ static struct urb *uas_alloc_cmd_urb(struct uas_dev_info *devinfo, gfp_t gfp,
+-					struct scsi_cmnd *cmnd, u16 stream_id)
++					struct scsi_cmnd *cmnd)
+ {
+ 	struct usb_device *udev = devinfo->udev;
+ 	struct scsi_device *sdev = cmnd->device;
+@@ -626,8 +626,7 @@ static int uas_submit_urbs(struct scsi_cmnd *cmnd,
+ 	}
+ 
+ 	if (cmdinfo->state & ALLOC_CMD_URB) {
+-		cmdinfo->cmd_urb = uas_alloc_cmd_urb(devinfo, gfp, cmnd,
+-						     cmdinfo->stream);
++		cmdinfo->cmd_urb = uas_alloc_cmd_urb(devinfo, gfp, cmnd);
+ 		if (!cmdinfo->cmd_urb)
+ 			return SCSI_MLQUEUE_DEVICE_BUSY;
+ 		cmdinfo->state &= ~ALLOC_CMD_URB;
+-- 
+1.8.3.4
+

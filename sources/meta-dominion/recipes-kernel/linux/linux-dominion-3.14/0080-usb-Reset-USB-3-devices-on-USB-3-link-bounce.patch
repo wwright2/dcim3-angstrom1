@@ -1,0 +1,97 @@
+From c315a8f807a8d3aa902a166e654cf2fa67956bfe Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 8 Nov 2013 13:41:05 +0100
+Subject: [PATCH 080/122] usb: Reset USB-3 devices on USB-3 link bounce
+
+On disconnect USB3 protocol ports transit from U0 to SS.Inactive to Rx.Detect,
+on a recoverable error, the port stays in SS.Inactive and we recover from it by
+doing a warm-reset (through usb_device_reset if we have a udev for the port).
+
+If this really is a disconnect we may end up trying the warm-reset anyways,
+since khubd may run before the SS.Inactive to Rx.Detect transition, or it
+may get skipped if the transition to Rx.Detect happens before khubd gets run.
+
+With a loose connector, or in the case which actually led me to debugging this
+bad ACPI firmware toggling Vbus off and on in quick succession, the port
+may transition from Rx.Detect to U0 again before khubd gets run. In this case
+the device state is unknown really, but khubd happily goes into the resuscitate
+an existing device path, and the device driver never gets notified about the
+device state being messed up.
+
+If the above scenario happens with a streams using device, as soon as an urb
+is submitted to an endpoint with streams, the following appears in dmesg:
+
+ERROR Transfer event for disabled endpoint or incorrect stream ring
+@0000000036807420 00000000 00000000 04000000 04078000
+
+Notice how the TRB address is all zeros. I've seen this both on Intel
+Pantherpoint and Nec xhci hosts.
+
+Luckily we can detect the U0 to SS.Inactive to Rx.Detect to U0 all having
+happened before khubd runs case since the C_LINK_STATE bit gets set in the
+portchange bits on the U0 -> SS.Inactive change. This bit will also be set on
+suspend / resume, but then it gets cleared by port_hub_init before khubd runs.
+
+So if the C_LINK_STATE bit is set and a warm-reset is not needed, iow the port
+is not still in SS.Inactive, and the port still has a connection, then the
+device needs to be reset to put it back in a known state.
+
+I've verified that doing the device reset also fixes the transfer event with
+all zeros address issue.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/core/hub.c | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 4f7629d..5da5394 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -4758,6 +4758,8 @@ static void hub_events(void)
+ 
+ 		/* deal with port status changes */
+ 		for (i = 1; i <= hdev->maxchild; i++) {
++			struct usb_device *udev = hub->ports[i - 1]->child;
++
+ 			if (test_bit(i, hub->busy_bits))
+ 				continue;
+ 			connect_change = test_bit(i, hub->change_bits);
+@@ -4856,8 +4858,6 @@ static void hub_events(void)
+ 			 */
+ 			if (hub_port_warm_reset_required(hub, portstatus)) {
+ 				int status;
+-				struct usb_device *udev =
+-					hub->ports[i - 1]->child;
+ 
+ 				dev_dbg(hub_dev, "warm reset port %d\n", i);
+ 				if (!udev ||
+@@ -4874,6 +4874,24 @@ static void hub_events(void)
+ 					usb_unlock_device(udev);
+ 					connect_change = 0;
+ 				}
++			/*
++			 * On disconnect USB3 protocol ports transit from U0 to
++			 * SS.Inactive to Rx.Detect. If this happens a warm-
++			 * reset is not needed, but a (re)connect may happen
++			 * before khubd runs and sees the disconnect, and the
++			 * device may be an unknown state.
++			 *
++			 * If the port went through SS.Inactive without khubd
++			 * seeing it the C_LINK_STATE change flag will be set,
++			 * and we reset the dev to put it in a known state.
++			 */
++			} else if (udev && hub_is_superspeed(hub->hdev) &&
++				   (portchange & USB_PORT_STAT_C_LINK_STATE) &&
++				   (portstatus & USB_PORT_STAT_CONNECTION)) {
++				usb_lock_device(udev);
++				usb_reset_device(udev);
++				usb_unlock_device(udev);
++				connect_change = 0;
+ 			}
+ 
+ 			if (connect_change)
+-- 
+1.8.3.4
+

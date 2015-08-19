@@ -1,0 +1,41 @@
+From ccfde4dd5f374ad61493765af49e894d19cc30e7 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 23 Oct 2013 14:27:09 +0100
+Subject: [PATCH 070/122] uas: s/response_ui/response_iu/
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 2 +-
+ include/linux/usb/uas.h   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 0ee5a05..33f9dcd 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -46,7 +46,7 @@ struct uas_dev_info {
+ 	struct usb_anchor sense_urbs;
+ 	struct usb_anchor data_urbs;
+ 	int qdepth, resetting;
+-	struct response_ui response;
++	struct response_iu response;
+ 	unsigned cmd_pipe, status_pipe, data_in_pipe, data_out_pipe;
+ 	unsigned use_streams:1;
+ 	unsigned uas_sense_old:1;
+diff --git a/include/linux/usb/uas.h b/include/linux/usb/uas.h
+index 5499ab5..1404178 100644
+--- a/include/linux/usb/uas.h
++++ b/include/linux/usb/uas.h
+@@ -79,7 +79,7 @@ struct sense_iu {
+ 	__u8 sense[SCSI_SENSE_BUFFERSIZE];
+ };
+ 
+-struct response_ui {
++struct response_iu {
+ 	__u8 iu_id;
+ 	__u8 rsvd1;
+ 	__be16 tag;
+-- 
+1.8.3.4
+

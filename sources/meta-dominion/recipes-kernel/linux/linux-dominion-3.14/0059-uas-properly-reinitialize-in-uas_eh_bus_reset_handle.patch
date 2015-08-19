@@ -1,0 +1,40 @@
+From 2dc8e5ff61d409f0f69b4b0bc010260e239caa5e Mon Sep 17 00:00:00 2001
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Fri, 13 Sep 2013 13:27:11 +0200
+Subject: [PATCH 059/122] uas: properly reinitialize in
+ uas_eh_bus_reset_handler
+
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index d966b59..fc08ee9 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -85,6 +85,8 @@ static int uas_submit_urbs(struct scsi_cmnd *cmnd,
+ 				struct uas_dev_info *devinfo, gfp_t gfp);
+ static void uas_do_work(struct work_struct *work);
+ static int uas_try_complete(struct scsi_cmnd *cmnd, const char *caller);
++static void uas_configure_endpoints(struct uas_dev_info *devinfo);
++static void uas_free_streams(struct uas_dev_info *devinfo);
+ 
+ static DECLARE_WORK(uas_work, uas_do_work);
+ static DEFINE_SPINLOCK(uas_work_lock);
+@@ -800,7 +802,10 @@ static int uas_eh_bus_reset_handler(struct scsi_cmnd *cmnd)
+ 	usb_kill_anchored_urbs(&devinfo->cmd_urbs);
+ 	usb_kill_anchored_urbs(&devinfo->sense_urbs);
+ 	usb_kill_anchored_urbs(&devinfo->data_urbs);
++	uas_free_streams(devinfo);
+ 	err = usb_reset_device(udev);
++	if (!err)
++		uas_configure_endpoints(devinfo);
+ 	devinfo->resetting = 0;
+ 
+ 	if (err) {
+-- 
+1.8.3.4
+

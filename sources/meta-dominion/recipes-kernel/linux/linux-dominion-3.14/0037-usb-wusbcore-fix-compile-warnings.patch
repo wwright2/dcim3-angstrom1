@@ -1,0 +1,77 @@
+From 56c78961c8731bfa67bf28f9786ef326a09b2d81 Mon Sep 17 00:00:00 2001
+From: Thomas Pugliese <thomas.pugliese@gmail.com>
+Date: Fri, 28 Feb 2014 21:54:37 -0600
+Subject: [PATCH 037/122] usb: wusbcore: fix compile warnings
+
+Fix "pointer targets differ in signedness" and "variable set but not
+used" warnings
+
+Signed-off-by: Thomas Pugliese <thomas.pugliese@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/wusbcore/devconnect.c | 4 +---
+ drivers/usb/wusbcore/wa-xfer.c    | 6 ++----
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/usb/wusbcore/devconnect.c b/drivers/usb/wusbcore/devconnect.c
+index 3b959e8..0677139 100644
+--- a/drivers/usb/wusbcore/devconnect.c
++++ b/drivers/usb/wusbcore/devconnect.c
+@@ -284,7 +284,7 @@ void wusbhc_devconnect_ack(struct wusbhc *wusbhc, struct wusb_dn_connect *dnc,
+ 	struct device *dev = wusbhc->dev;
+ 	struct wusb_dev *wusb_dev;
+ 	struct wusb_port *port;
+-	unsigned idx, devnum;
++	unsigned idx;
+ 
+ 	mutex_lock(&wusbhc->mutex);
+ 
+@@ -312,8 +312,6 @@ void wusbhc_devconnect_ack(struct wusbhc *wusbhc, struct wusb_dn_connect *dnc,
+ 		goto error_unlock;
+ 	}
+ 
+-	devnum = idx + 2;
+-
+ 	/* Make sure we are using no crypto on that "virtual port" */
+ 	wusbhc->set_ptk(wusbhc, idx, 0, NULL, 0);
+ 
+diff --git a/drivers/usb/wusbcore/wa-xfer.c b/drivers/usb/wusbcore/wa-xfer.c
+index 0636206..404ce81 100644
+--- a/drivers/usb/wusbcore/wa-xfer.c
++++ b/drivers/usb/wusbcore/wa-xfer.c
+@@ -1007,7 +1007,7 @@ static void wa_seg_tr_cb(struct urb *urb)
+  */
+ static struct scatterlist *wa_xfer_create_subset_sg(struct scatterlist *in_sg,
+ 	const unsigned int bytes_transferred,
+-	const unsigned int bytes_to_transfer, unsigned int *out_num_sgs)
++	const unsigned int bytes_to_transfer, int *out_num_sgs)
+ {
+ 	struct scatterlist *out_sg;
+ 	unsigned int bytes_processed = 0, offset_into_current_page_data = 0,
+@@ -1161,14 +1161,13 @@ static int __wa_populate_dto_urb(struct wa_xfer *xfer,
+  */
+ static int __wa_xfer_setup_segs(struct wa_xfer *xfer, size_t xfer_hdr_size)
+ {
+-	int result, cnt, iso_frame_offset;
++	int result, cnt, isoc_frame_offset = 0;
+ 	size_t alloc_size = sizeof(*xfer->seg[0])
+ 		- sizeof(xfer->seg[0]->xfer_hdr) + xfer_hdr_size;
+ 	struct usb_device *usb_dev = xfer->wa->usb_dev;
+ 	const struct usb_endpoint_descriptor *dto_epd = xfer->wa->dto_epd;
+ 	struct wa_seg *seg;
+ 	size_t buf_itr, buf_size, buf_itr_size;
+-	int isoc_frame_offset = 0;
+ 
+ 	result = -ENOMEM;
+ 	xfer->seg = kcalloc(xfer->segs, sizeof(xfer->seg[0]), GFP_ATOMIC);
+@@ -1176,7 +1175,6 @@ static int __wa_xfer_setup_segs(struct wa_xfer *xfer, size_t xfer_hdr_size)
+ 		goto error_segs_kzalloc;
+ 	buf_itr = 0;
+ 	buf_size = xfer->urb->transfer_buffer_length;
+-	iso_frame_offset = 0;
+ 	for (cnt = 0; cnt < xfer->segs; cnt++) {
+ 		size_t iso_pkt_descr_size = 0;
+ 		int seg_isoc_frame_count = 0, seg_isoc_size = 0;
+-- 
+1.8.3.4
+

@@ -1,0 +1,34 @@
+From 0f0c6cd428966acd73c65fe5156817590f1fab69 Mon Sep 17 00:00:00 2001
+From: Thomas Pugliese <thomas.pugliese@gmail.com>
+Date: Fri, 28 Feb 2014 15:10:26 -0600
+Subject: [PATCH 033/122] usb: wusbcore: read actual_length bytes isoc in
+ segments
+
+Use the iso_frame_desc.actual_length field instead of length when
+reading isoc in data segments from the HWA.  This fixes a case where the
+isoc in read URB would never complete because it expected the HWA to
+send more data than it actually did.  When this happened the URB would
+be stuck in the driver preventing module unload and clean shutdown.
+
+Signed-off-by: Thomas Pugliese <thomas.pugliese@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/wusbcore/wa-xfer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/wusbcore/wa-xfer.c b/drivers/usb/wusbcore/wa-xfer.c
+index 3d6b30d..ff1de5e 100644
+--- a/drivers/usb/wusbcore/wa-xfer.c
++++ b/drivers/usb/wusbcore/wa-xfer.c
+@@ -2159,7 +2159,7 @@ static void __wa_populate_buf_in_urb_isoc(struct wahc *wa, struct wa_xfer *xfer,
+ 	wa->buf_in_urb->transfer_dma = xfer->urb->transfer_dma +
+ 		xfer->urb->iso_frame_desc[curr_iso_frame].offset;
+ 	wa->buf_in_urb->transfer_buffer_length =
+-		xfer->urb->iso_frame_desc[curr_iso_frame].length;
++		xfer->urb->iso_frame_desc[curr_iso_frame].actual_length;
+ 	wa->buf_in_urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+ 	wa->buf_in_urb->transfer_buffer = NULL;
+ 	wa->buf_in_urb->sg = NULL;
+-- 
+1.8.3.4
+

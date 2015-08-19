@@ -1,0 +1,36 @@
+From 8b29a70801f35dc334c9d67f7c8ada5bce8e6f65 Mon Sep 17 00:00:00 2001
+From: Thomas Pugliese <thomas.pugliese@gmail.com>
+Date: Fri, 28 Feb 2014 15:15:19 -0600
+Subject: [PATCH 032/122] usb: wusbcore: adjust iterator correctly when
+ searching for ep comp descriptor
+
+If the endpoint companion descriptor is not the first descriptor in the
+extra descriptor buffer of a usb_host_endpoint, the loop in
+rpipe_epc_find will get its buffer pointer and remaining size values out
+of sync.  The buffer ptr 'itr' is advanced by the descriptor's bLength
+field but the remaining size value 'itr_size' is decremented by the
+bDescriptorType field which is incorrect.  This patch fixes the loop to
+decrement itr_size by bLength as it should.
+
+Signed-off-by: Thomas Pugliese <thomas.pugliese@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/wusbcore/wa-rpipe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/wusbcore/wa-rpipe.c b/drivers/usb/wusbcore/wa-rpipe.c
+index 6ca80a4..6d6da12 100644
+--- a/drivers/usb/wusbcore/wa-rpipe.c
++++ b/drivers/usb/wusbcore/wa-rpipe.c
+@@ -298,7 +298,7 @@ static struct usb_wireless_ep_comp_descriptor *rpipe_epc_find(
+ 			break;
+ 		}
+ 		itr += hdr->bLength;
+-		itr_size -= hdr->bDescriptorType;
++		itr_size -= hdr->bLength;
+ 	}
+ out:
+ 	return epcd;
+-- 
+1.8.3.4
+

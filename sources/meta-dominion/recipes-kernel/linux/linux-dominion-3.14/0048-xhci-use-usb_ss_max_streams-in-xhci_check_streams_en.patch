@@ -1,0 +1,31 @@
+From c12858369c538b104bb28b9b08dfc382c9cd76ea Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 4 Oct 2013 17:05:55 +0200
+Subject: [PATCH 048/122] xhci: use usb_ss_max_streams in
+ xhci_check_streams_endpoint
+
+The ss_ep_comp bmAttributes filed can contain more info then just the
+streams, use usb_ss_max_streams to properly get max streams.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/host/xhci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+index dab869c..e236999 100644
+--- a/drivers/usb/host/xhci.c
++++ b/drivers/usb/host/xhci.c
+@@ -2971,7 +2971,7 @@ static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
+ 	ret = xhci_check_args(xhci_to_hcd(xhci), udev, ep, 1, true, __func__);
+ 	if (ret <= 0)
+ 		return -EINVAL;
+-	if (ep->ss_ep_comp.bmAttributes == 0) {
++	if (usb_ss_max_streams(&ep->ss_ep_comp) == 0) {
+ 		xhci_warn(xhci, "WARN: SuperSpeed Endpoint Companion"
+ 				" descriptor for ep 0x%x does not support streams\n",
+ 				ep->desc.bEndpointAddress);
+-- 
+1.8.3.4
+

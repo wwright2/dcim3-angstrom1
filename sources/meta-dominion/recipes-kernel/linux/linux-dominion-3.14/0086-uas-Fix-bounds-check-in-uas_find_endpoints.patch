@@ -1,0 +1,29 @@
+From bdf2de24e08f81640d239ffb22874bf90abeefec Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Tue, 29 Oct 2013 09:06:54 +0100
+Subject: [PATCH 086/122] uas: Fix bounds check in uas_find_endpoints
+
+The loop uses up to 3 bytes of the endpoint extra data.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 1ac66f2..7662b3e 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -907,7 +907,7 @@ static int uas_find_endpoints(struct usb_host_interface *alt,
+ 	for (i = 0; i < n_endpoints; i++) {
+ 		unsigned char *extra = endpoint[i].extra;
+ 		int len = endpoint[i].extralen;
+-		while (len > 1) {
++		while (len >= 3) {
+ 			if (extra[1] == USB_DT_PIPE_USAGE) {
+ 				unsigned pipe_id = extra[2];
+ 				if (pipe_id > 0 && pipe_id < 5)
+-- 
+1.8.3.4
+

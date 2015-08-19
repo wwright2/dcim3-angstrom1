@@ -1,0 +1,41 @@
+From b68711438b013c55ed9106584eb8048ecd41cb4d Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Mon, 28 Apr 2014 09:50:23 +0200
+Subject: [PATCH 1/5] QGCExternalLibs.pri: don't search host directoryies for
+ target headers and libs
+
+Upstream-status: Inappropiate [OE specific]
+---
+ QGCExternalLibs.pri | 18 ------------------
+ 1 file changed, 18 deletions(-)
+
+diff --git a/QGCExternalLibs.pri b/QGCExternalLibs.pri
+index eaea693..b75bf26 100644
+--- a/QGCExternalLibs.pri
++++ b/QGCExternalLibs.pri
+@@ -1,22 +1,4 @@
+ #
+-# [REQUIRED] Tell the Linux build to look in a few additional places for libs
+-#
+-LinuxBuild {
+-	INCLUDEPATH += \
+-        /usr/include \
+-        /usr/local/include
+-
+-	LIBS += \
+-		-L/usr/lib
+-
+-    linux-g++-64 {
+-        LIBS += \
+-            -L/usr/local/lib64 \
+-            -L/usr/lib64
+-	}
+-}
+-
+-#
+ # [REQUIRED] Add support for <inttypes.h> to Windows.
+ #
+ WindowsBuild {
+-- 
+1.9.0
+

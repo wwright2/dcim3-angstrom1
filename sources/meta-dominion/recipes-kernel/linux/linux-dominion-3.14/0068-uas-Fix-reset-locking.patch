@@ -1,0 +1,45 @@
+From f9aaeb87419733c933473b349a77c3baf5415bf9 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 22 Sep 2013 16:27:02 +0200
+Subject: [PATCH 068/122] uas: Fix reset locking
+
+Fix the uas_eh_bus_reset_handler not properly taking the usbdev lock
+before calling usb_device_reset, the usb-core expects this lock to be
+taken when usb_device_reset is called.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 6ad5de9..36ef82a 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -804,6 +804,13 @@ static int uas_eh_bus_reset_handler(struct scsi_cmnd *cmnd)
+ 	struct usb_device *udev = devinfo->udev;
+ 	int err;
+ 
++	err = usb_lock_device_for_reset(udev, devinfo->intf);
++	if (err) {
++		shost_printk(KERN_ERR, sdev->host,
++			     "%s FAILED to get lock err %d\n", __func__, err);
++		return FAILED;
++	}
++
+ 	shost_printk(KERN_INFO, sdev->host, "%s start\n", __func__);
+ 	devinfo->resetting = 1;
+ 	uas_abort_work(devinfo);
+@@ -817,6 +824,8 @@ static int uas_eh_bus_reset_handler(struct scsi_cmnd *cmnd)
+ 		uas_configure_endpoints(devinfo);
+ 	devinfo->resetting = 0;
+ 
++	usb_unlock_device(udev);
++
+ 	if (err) {
+ 		shost_printk(KERN_INFO, sdev->host, "%s FAILED\n", __func__);
+ 		return FAILED;
+-- 
+1.8.3.4
+

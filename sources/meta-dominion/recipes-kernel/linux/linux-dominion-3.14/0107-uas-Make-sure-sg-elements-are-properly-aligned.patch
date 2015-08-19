@@ -1,0 +1,46 @@
+From 2ee23bb64f70a24cfc078f213c5abd0421397e23 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 15 Nov 2013 10:04:31 +0100
+Subject: [PATCH 107/122] uas: Make sure sg elements are properly aligned
+
+Copy the sg alignment trick from the usb-storage driver, without this I'm
+seeing intermittent errors when using uas devices with an ehci controller.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 6208682..ad97615 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -925,6 +925,24 @@ static int uas_eh_bus_reset_handler(struct scsi_cmnd *cmnd)
+ static int uas_slave_alloc(struct scsi_device *sdev)
+ {
+ 	sdev->hostdata = (void *)sdev->host->hostdata;
++
++	/* USB has unusual DMA-alignment requirements: Although the
++	 * starting address of each scatter-gather element doesn't matter,
++	 * the length of each element except the last must be divisible
++	 * by the Bulk maxpacket value.  There's currently no way to
++	 * express this by block-layer constraints, so we'll cop out
++	 * and simply require addresses to be aligned at 512-byte
++	 * boundaries.  This is okay since most block I/O involves
++	 * hardware sectors that are multiples of 512 bytes in length,
++	 * and since host controllers up through USB 2.0 have maxpacket
++	 * values no larger than 512.
++	 *
++	 * But it doesn't suffice for Wireless USB, where Bulk maxpacket
++	 * values can be as large as 2048.  To make that work properly
++	 * will require changes to the block layer.
++	 */
++	blk_queue_update_dma_alignment(sdev->request_queue, (512 - 1));
++
+ 	return 0;
+ }
+ 
+-- 
+1.8.3.4
+

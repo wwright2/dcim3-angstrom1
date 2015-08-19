@@ -1,0 +1,64 @@
+From bbf962599d784d3dff472492c083afbf04735a41 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 21 Oct 2013 09:40:48 +0100
+Subject: [PATCH 082/122] usb-storage: Don't bind to uas devices if the uas
+ driver is enabled
+
+uas devices have 2 alternative settings on their usb-storage interface,
+one for usb-storage and one for uas. Using the uas driver is preferred, so if
+the uas driver is enabled, and the device has an uas alt setting, don't bind.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/unusual_devs.h |  5 +++++
+ drivers/usb/storage/usb.c          | 10 ++++++++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+index adbeb25..f4a82291 100644
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -2086,6 +2086,11 @@ UNUSUAL_DEV( 0xed10, 0x7636, 0x0001, 0x0001,
+ 		"Digital MP3 Audio Player",
+ 		USB_SC_DEVICE, USB_PR_DEVICE, NULL, US_FL_NOT_LOCKABLE ),
+ 
++/* Unusual uas devices */
++#if IS_ENABLED(CONFIG_USB_UAS)
++#include "unusual_uas.h"
++#endif
++
+ /* Control/Bulk transport for all SubClass values */
+ USUAL_DEV(USB_SC_RBC, USB_PR_CB),
+ USUAL_DEV(USB_SC_8020, USB_PR_CB),
+diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
+index 1c0b89f..388f567 100644
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -72,6 +72,10 @@
+ #include "sierra_ms.h"
+ #include "option_ms.h"
+ 
++#if IS_ENABLED(CONFIG_USB_UAS)
++#include "uas-detect.h"
++#endif
++
+ /* Some informational data */
+ MODULE_AUTHOR("Matthew Dharm <mdharm-usb@one-eyed-alien.net>");
+ MODULE_DESCRIPTION("USB Mass Storage driver for Linux");
+@@ -1035,6 +1039,12 @@ static int storage_probe(struct usb_interface *intf,
+ 	int result;
+ 	int size;
+ 
++	/* If uas is enabled and this device can do uas then ignore it. */
++#if IS_ENABLED(CONFIG_USB_UAS)
++	if (uas_use_uas_driver(intf, id))
++		return -ENXIO;
++#endif
++
+ 	/*
+ 	 * If the device isn't standard (is handled by a subdriver
+ 	 * module) then don't accept it.
+-- 
+1.8.3.4
+

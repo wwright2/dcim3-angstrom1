@@ -1,0 +1,47 @@
+From b8d7296a14c4bd81a4de4bd17bfb68c2dd8b9cf9 Mon Sep 17 00:00:00 2001
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 11 Feb 2014 13:23:07 +0100
+Subject: [PATCH 014/122] USB: ELAN: Remove useless "default M" lines
+
+The Kconfig entries for USB_U132_HCD and USB_FTDI_ELAN default to
+(uppercase) "M". But in Kconfig (lowercase) "m" is a magic symbol. "M"
+is an ordinary symbol. As "M" is never set these Kconfig symbols will
+also not be set by default.
+
+Since I'm not aware of a reason why these driver should be set by
+default, let's just drop these lines (that basically do nothing).
+
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/host/Kconfig | 1 -
+ drivers/usb/misc/Kconfig | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index a9707da..e22b826 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -584,7 +584,6 @@ config FHCI_DEBUG
+ config USB_U132_HCD
+ 	tristate "Elan U132 Adapter Host Controller"
+ 	depends on USB_FTDI_ELAN
+-	default M
+ 	help
+ 	  The U132 adapter is a USB to CardBus adapter specifically designed
+ 	  for PC cards that contain an OHCI host controller. Typical PC cards
+diff --git a/drivers/usb/misc/Kconfig b/drivers/usb/misc/Kconfig
+index ba5f70f..1bca274 100644
+--- a/drivers/usb/misc/Kconfig
++++ b/drivers/usb/misc/Kconfig
+@@ -128,7 +128,6 @@ config USB_IDMOUSE
+ 
+ config USB_FTDI_ELAN
+ 	tristate "Elan PCMCIA CardBus Adapter USB Client"
+-	default M
+ 	help
+ 	  ELAN's Uxxx series of adapters are USB to PCMCIA CardBus adapters.
+ 	  Currently only the U132 adapter is available.
+-- 
+1.8.3.4
+

@@ -1,0 +1,32 @@
+From cbe7a16adcf4862bd3225896cad5e49989accafa Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Tue, 12 Nov 2013 10:53:57 +0100
+Subject: [PATCH 097/122] uas: uas_alloc_data_urb: Remove unnecessary
+ use_streams check
+
+uas_alloc_data_urb always gets called with a stream_id value of 0 when not
+using streams. Removing the check makes it consistent with uas_alloc_sense_urb.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 10e580e..e06505c 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -429,8 +429,7 @@ static struct urb *uas_alloc_data_urb(struct uas_dev_info *devinfo, gfp_t gfp,
+ 		goto out;
+ 	usb_fill_bulk_urb(urb, udev, pipe, NULL, sdb->length,
+ 			  uas_data_cmplt, cmnd);
+-	if (devinfo->use_streams)
+-		urb->stream_id = stream_id;
++	urb->stream_id = stream_id;
+ 	urb->num_sgs = udev->bus->sg_tablesize ? sdb->table.nents : 0;
+ 	urb->sg = sdb->table.sgl;
+  out:
+-- 
+1.8.3.4
+

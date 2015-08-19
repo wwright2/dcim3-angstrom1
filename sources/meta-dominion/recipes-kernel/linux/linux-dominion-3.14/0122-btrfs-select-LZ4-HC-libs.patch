@@ -1,0 +1,31 @@
+From 119566bc8ed56e01ebf6933984560814515ec20b Mon Sep 17 00:00:00 2001
+From: Koen Kooi <koen@dominion.thruhere.net>
+Date: Sat, 18 Jan 2014 11:36:55 +0100
+Subject: [PATCH 122/126] btrfs: select LZ4(HC) libs
+
+LZ4(HC) supports needs these builtin to avoid compile failure and to actually use LZ4 compression.
+
+Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+Signed-off-by: David Sterba <dsterba@suse.cz>
+---
+ fs/btrfs/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/fs/btrfs/Kconfig b/fs/btrfs/Kconfig
+index a66768e..dad291f 100644
+--- a/fs/btrfs/Kconfig
++++ b/fs/btrfs/Kconfig
+@@ -6,6 +6,10 @@ config BTRFS_FS
+ 	select ZLIB_DEFLATE
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
++	select LZ4_COMPRESS
++	select LZ4_DECOMPRESS
++	select LZ4HC_COMPRESS
++	select LZ4HC_DECOMPRESS
+ 	select RAID6_PQ
+ 	select XOR_BLOCKS
+ 
+-- 
+1.8.3.4
+

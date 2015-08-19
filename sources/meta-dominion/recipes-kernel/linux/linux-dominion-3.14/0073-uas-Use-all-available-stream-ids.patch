@@ -1,0 +1,47 @@
+From 84a3b5d5333bcf441c5cad1edbe863c7aa609a73 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 23 Oct 2013 17:46:17 +0100
+Subject: [PATCH 073/122] uas: Use all available stream ids
+
+If we get ie 16 streams we can use stream-id 1-16, not 1-15.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+---
+ drivers/usb/storage/uas.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 33f9dcd..3f021f2 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -722,7 +722,7 @@ static int uas_eh_task_mgmt(struct scsi_cmnd *cmnd,
+ {
+ 	struct Scsi_Host *shost = cmnd->device->host;
+ 	struct uas_dev_info *devinfo = (void *)shost->hostdata[0];
+-	u16 tag = devinfo->qdepth - 1;
++	u16 tag = devinfo->qdepth;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&devinfo->lock, flags);
+@@ -843,7 +843,7 @@ static int uas_slave_configure(struct scsi_device *sdev)
+ {
+ 	struct uas_dev_info *devinfo = sdev->hostdata;
+ 	scsi_set_tag_type(sdev, MSG_ORDERED_TAG);
+-	scsi_activate_tcq(sdev, devinfo->qdepth - 3);
++	scsi_activate_tcq(sdev, devinfo->qdepth - 2);
+ 	return 0;
+ }
+ 
+@@ -1027,7 +1027,7 @@ static int uas_probe(struct usb_interface *intf, const struct usb_device_id *id)
+ 	INIT_LIST_HEAD(&devinfo->dead_list);
+ 	uas_configure_endpoints(devinfo);
+ 
+-	result = scsi_init_shared_tag_map(shost, devinfo->qdepth - 3);
++	result = scsi_init_shared_tag_map(shost, devinfo->qdepth - 2);
+ 	if (result)
+ 		goto free_streams;
+ 
+-- 
+1.8.3.4
+
