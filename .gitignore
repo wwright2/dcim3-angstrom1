@@ -1,10 +1,6 @@
 bitbake.lock
 build
 deploy/
-conf/auto.conf
-conf/bblayers.conf
-conf/sanity_info
-conf/site.conf
 pseudodone
 git_config
 subversion_config/
