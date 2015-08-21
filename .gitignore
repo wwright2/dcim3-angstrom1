@@ -8,7 +8,6 @@ package-depends.dot
 pn-depends.dot
 task-depends.dot
 tags
-environment-angstrom-v2014.12
 buildhistory
 cache
 sources/downloads
@@ -31,4 +30,5 @@ sources/meta-sunxi
 sources/meta-telephony
 sources/meta-xilinx
 *~$
+^#*#$
 sources/meta-openpandora
