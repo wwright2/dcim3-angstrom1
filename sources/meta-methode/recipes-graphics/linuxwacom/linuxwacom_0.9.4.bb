@@ -31,7 +31,10 @@ do_bootstrap () {
 	echo `pwd`
 	echo "${S}"
 	echo "${D}"
-	cd ${S}
-	./bootstrap
+	if [ ! -f ./bootstrap ] ; then
+		cd ${S}
+		./bootstrap
+	fi
+		
 }
 addtask bootstrap after do_unpack before do_configure

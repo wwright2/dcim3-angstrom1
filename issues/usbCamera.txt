@@ -1,0 +1,11 @@
+2015.08.25
+USB camera 
+
+[ 5947.028228] Trying 10/HALF
+[ 5947.708099] usb 1-1.4.4: new high-speed USB device number 13 using musb-hdrc
+[ 5947.905700] usb 1-1.4.4: New USB device found, idVendor=041e, idProduct=4095
+[ 5947.920166] usb 1-1.4.4: New USB device strings: Mfr=3, Product=1, SerialNumber=2
+[ 5947.931243] usb 1-1.4.4: Product: Live! Cam Sync HD VF0770
+[ 5947.937042] usb 1-1.4.4: Manufacturer: Creative Technology Ltd.
+[ 5947.948120] usb 1-1.4.4: SerialNumber: 2014021207827
+

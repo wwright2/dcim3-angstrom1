@@ -34,6 +34,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d
 # - read-only-rootfs    - tweaks an image to support read-only rootfs
 #
 FEATURE_PACKAGES_x11 = "packagegroup-core-x11"
+FEATURE_PACKAGES_x11-browser = "packagegroup-core-x11-browser"
 FEATURE_PACKAGES_x11-base = "packagegroup-core-x11-base"
 FEATURE_PACKAGES_x11-sato = "packagegroup-core-x11-sato"
 FEATURE_PACKAGES_tools-debug = "packagegroup-core-tools-debug"

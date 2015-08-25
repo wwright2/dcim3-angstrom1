@@ -36,3 +36,4 @@ meta-edison,git://github.com/koenkooi/meta-edison.git,master,bcfe06e72158ec3b842
 meta-intel-iot-middleware,http://git.yoctoproject.org/git/meta-intel-iot-middleware,master,48604925ea011b6dba2953b407aff0fce5e7cbbb
 meta-ci,git://github.com/koenkooi/meta-ci.git,master,HEAD
 openembedded-core,git://github.com/openembedded/openembedded-core.git,dizzy,HEAD
+meta-web-kiosk,git://git.yoctoproject.org/meta-web-kiosk,master,7bf1e5b2cffb58d521353b00a1a3049c520875ed

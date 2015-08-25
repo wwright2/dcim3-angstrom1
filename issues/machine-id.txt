@@ -1,0 +1,7 @@
+[FAILED] Failed to start Commit a transient machine-id on disk.
+See "systemctl status systemd-machine-id-commit.service" for details.
+[   13.584686] systemd[1]: systemd-machine-id-commit.service
+
+
+https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1411140
+   - fix ubuntu 16.4
