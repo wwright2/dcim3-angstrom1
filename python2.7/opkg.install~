@@ -1,0 +1,2 @@
+opkg install python-modules
+opkg install python-pip

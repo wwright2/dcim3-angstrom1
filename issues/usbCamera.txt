@@ -1,5 +1,23 @@
 2015.08.25
-USB camera 
+USB camera
+
+gstreamer1.0-plugins-good-jpeg
+gstreamer1.0-plugins-good-ximagesrc 
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-good-video4linux2
+
+gst-launch-1.0 v4l2src num-buffers=1 ! jpegenc ! filesink location=$pic
+
+Module                  Size  Used by
+hid_keytouch             890  0
+uvcvideo               58266  0
+v4l2_common             5537  0
+videobuf2_vmalloc       1566  0
+videobuf2_memops        2096  1 videobuf2_vmalloc
+v4l2_int_device         1894  0
+v4l2_mem2mem            6137  0
+videobuf2_core         18239  1 v4l2_mem2mem
+videodev               70905  2 v4l2_common,uvcvideo
 
 [ 5947.028228] Trying 10/HALF
 [ 5947.708099] usb 1-1.4.4: new high-speed USB device number 13 using musb-hdrc
@@ -8,4 +26,3 @@ USB camera
 [ 5947.931243] usb 1-1.4.4: Product: Live! Cam Sync HD VF0770
 [ 5947.937042] usb 1-1.4.4: Manufacturer: Creative Technology Ltd.
 [ 5947.948120] usb 1-1.4.4: SerialNumber: 2014021207827
-

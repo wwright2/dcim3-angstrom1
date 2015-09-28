@@ -31,14 +31,15 @@ inherit autotools texinfo
 
 S="${WORKDIR}/git"
 B="${WORKDIR}/build"
-           
-addtask autogen after do_patch before do_configure
-do_autogen () {
-	echo `pwd`
-	#mkdir -p ${WORKDIR}/image/bin
-	cd ${WORKDIR}/git
-	./autogen.sh --host=arm-linux-gnueabihf --bindir=${WORKDIR}/image
-}
+
+#ww
+#addtask autogen after do_patch before do_configure
+#do_autogen () {
+#	echo `pwd`
+#	#mkdir -p ${WORKDIR}/image/bin
+#	cd ${WORKDIR}/git
+#	./autogen.sh --host=arm-linux-gnueabihf --bindir=${WORKDIR}/image
+#}
 
 EXTRA_OECONF += "--bindir=${WORKDIR}/build \
 				--host=arm-linux-gnueabihf \
