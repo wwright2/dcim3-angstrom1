@@ -11,7 +11,7 @@ SRCPV = "3.2"
 #SRC_URI = "http://10.35.0.153/dcim3-pkgs/linux-dcim-3.2.x.tar.gz;protocol=http;name=machine;"
 #SRC_URI[machine.md5sum] = "ccc4daa679a3a23d1d282a64b8750cda"
 
-SRC_URI = "http://10.35.0.153/dcim3-pkgs/linux-dcim-3.2.x-r36.tar.gz;protocol=http;name=machine"
+SRC_URI = "http://cti-dcim01/dcim3-pkgs/linux-dcim-3.2.x-r36.tar.gz;protocol=http;name=machine"
 SRC_URI[machine.md5sum] = "07cdb8660b3359277f6d76e5590c8cd0"
 
 SRC_URI += "file://am335x-pm-firmware.bin;name=pmfirmwarebin"
