@@ -20,13 +20,15 @@ EXTRA_OECONF = " --enable-db=no  --includedir=${STAGING_INCDIR}/pam \
 addtask pam_install after do_install
 do_pam_install (){
 	cd ${S}/libpam
-	
 	mkdir -p ${STAGING_INCDIR}
-	
 	echo "cp -r include/security ${STAGING_INCDIR}"
 	cp -r include/security ${STAGING_INCDIR}
 
 	echo "cp -r include/pam*.h ${STAGING_INCDIR}/pam"
 	mkdir -p ${STAGING_INCDIR}/pam
 	cp -r include/security/pam*.h ${STAGING_INCDIR}/pam
+
+	cd ${S}/libpamc
+	cp -r include/security ${STAGING_INCDIR}
+
 }
